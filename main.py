@@ -6,6 +6,6 @@ from config import config
 if __name__ == "__main__":
     config = config.Config() 
 
-    db_session.global_init(config.database)
+    #db_session.global_init(config.database)
 
-    #asyncio.run(telegram.start_polling(config.telegram))
+    asyncio.run(telegram.start_polling(config.telegram))

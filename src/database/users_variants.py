@@ -1,7 +1,7 @@
 import sqlalchemy
 from sqlalchemy_serializer import SerializerMixin
 
-from db_session import SqlAlchemyBase
+from src.database.db_session import SqlAlchemyBase
 
 
 class UserVariant(SqlAlchemyBase, SerializerMixin):
