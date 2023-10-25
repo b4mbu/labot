@@ -18,4 +18,4 @@ class User(SqlAlchemyBase, SerializerMixin):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     role = sqlalchemy.Column(sqlalchemy.Text)
     full_name = sqlalchemy.Column(sqlalchemy.Text)
-    telegram_id = sqlalchemy.Column(sqlalchemy.Text)
+    telegram_id = sqlalchemy.Column(sqlalchemy.Integer)

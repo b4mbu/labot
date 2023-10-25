@@ -16,10 +16,7 @@ class Variant(SqlAlchemyBase, SerializerMixin):  # Это класс, описы
     __tablename__ = 'variants'
     __table_args__ = {'extend_existing': True}
 
-    id          = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    name        = sqlalchemy.Column(sqlalchemy.Text)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    name = sqlalchemy.Column(sqlalchemy.Text)
     count = sqlalchemy.Column(sqlalchemy.Integer)
-    labs = sqlalchemy.Column(sqlalchemy.Integer)
-
-
-
+    lab_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("labs.id"))
