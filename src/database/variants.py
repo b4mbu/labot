@@ -4,8 +4,7 @@ from sqlalchemy_serializer import SerializerMixin
 from db_session import SqlAlchemyBase
 
 
-class Variant(SqlAlchemyBase, SerializerMixin):  # Это класс, описывающий таблицу в бд
-    # TODO Доделать описание
+class variants(SqlAlchemyBase, SerializerMixin):  # Это класс, описывающий таблицу в бд
     """
     Класс, описывающий схему таблицы в нашей БД.
     id           - primary key
@@ -13,10 +12,12 @@ class Variant(SqlAlchemyBase, SerializerMixin):  # Это класс, описы
     full_name    - ФИО пользователя
     tg_user_name - ссылка на тг:  @example
     """
-    __tablename__ = 'variants'
+    __tablename__ = 'labs'
     __table_args__ = {'extend_existing': True}
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    name = sqlalchemy.Column(sqlalchemy.Text)
-    count = sqlalchemy.Column(sqlalchemy.Integer)
-    lab_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("labs.id"))
+    id         = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    name       = sqlalchemy.Column(sqlalchemy.Text)
+    description   = sqlalchemy.Column(sqlalchemy.Text)
+    creators_id = sqlalchemy.Column(sqlalchemy.Text)
+
+

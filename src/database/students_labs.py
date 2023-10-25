@@ -4,17 +4,16 @@ from sqlalchemy_serializer import SerializerMixin
 from db_session import SqlAlchemyBase
 
 
-class students(SqlAlchemyBase, SerializerMixin):  # Это класс, описывающий таблицу в бд
+class students_labs(SqlAlchemyBase, SerializerMixin):  # Это класс, описывающий таблицу в бд
     """
     Класс, описывающий схему таблицы в нашей БД.
-    id           - primary key
-    role         - роль пользователя
-    full_name    - ФИО пользователя
-    tg_user_name - ссылка на тг:  @example
+    students_id          - id студента
+    labs_id         - id лабораторной
+    variant    - вариант
     """
-    __tablename__ = 'students'
+    __tablename__ = 'students_labs'
     __table_args__ = {'extend_existing': True}
 
-    students_id         = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    labs_id             = sqlalchemy.Column(sqlalchemy.Integer)
-
+    students_id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    labs_id = sqlalchemy.Column(sqlalchemy.Integer)
+    variant = sqlalchemy.Column(sqlalchemy.Integer)

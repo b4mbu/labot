@@ -1,2 +1,1 @@
-print("Hello World!")
-print("Hi!!!")
+from src.telegrambot import telegram

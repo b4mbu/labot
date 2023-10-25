@@ -15,8 +15,9 @@ class students(SqlAlchemyBase, SerializerMixin):  # Это класс, опис�
     __tablename__ = 'students'
     __table_args__ = {'extend_existing': True}
 
-    id         = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    role       = sqlalchemy.Column(sqlalchemy.Text)
-    full_name   = sqlalchemy.Column(sqlalchemy.Text)
+    id           = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    role         = sqlalchemy.Column(sqlalchemy.Text)
+    full_name    = sqlalchemy.Column(sqlalchemy.Text)
     tg_user_name = sqlalchemy.Column(sqlalchemy.Text)
+    password     = sqlalchemy.Column(sqlalchemy.Text)
 
