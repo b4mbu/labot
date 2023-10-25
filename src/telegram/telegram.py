@@ -22,10 +22,6 @@ async def cmd_help(message: types.Message):
 """)
 
 
-@dp.message(Command("authorization"))
-async def cmd_help(message: types.Message):
-    await message.answer("""Введите в одном сообщении но на разных строках имя вашего аккаунта и пароль""")
-
 @dp.message(F.text.isdigit())
 async def type_of_responce(message: types.Message):
     pass
