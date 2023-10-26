@@ -2,6 +2,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters.command import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from config import config
+from config.config import TelegramConfig, RabbitMQConfig
 from time import sleep
 from src.database import db_session
 from src.database.labs import Lab
@@ -9,11 +10,12 @@ from src.database.tokens import Token
 from src.database.users import User
 from src.database.variants import Variant
 from src.database.users_variants import UserVariant
-import pika
+import aio_pika
 import json
 import asyncio
 
 dp = Dispatcher()
+global_rmq_config = ""
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
@@ -29,6 +31,7 @@ async def cmd_help(message: types.Message):
 /help - прочитать справочную информацию о боте
 /auth - авторизоваться
 """)
+
 
 f = '''
 @dp.message(Command("auth"))
@@ -61,17 +64,44 @@ async def cmd_authorization(message: types.Message):
 '''
 
 
-async def listener(message):
-    print("I go sleep")
-    await asyncio.sleep(10)
-    await message.reply("I am wake up")
-    print("Wake up")
-    pass
+async def from_queue():
+    connection = await aio_pika.connect_robust(
+        f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/"
+    )
+
+    async with connection:
+        queue_name = "from_bot_to_handler"
+        # Creating channel
+        channel: aio_pika.abc.AbstractChannel = await connection.channel()
+
+        # Declaring queue
+        queue: aio_pika.abc.AbstractQueue = await channel.declare_queue(
+            queue_name,
+            auto_delete=True
+        )
+        fl = 1
+        async with queue.iterator() as queue_iter:
+            # Cancel consuming after __aexit__
+            async for message in queue_iter:
+                async with message.process():
+                    print(message.body.decode())
+
+                    if queue.name in message.body.decode():
+                        break
+    print("close")
+
+
+async def to_queue(message):
+    connection: aio_pika.RobustConnection = await aio_pika.connect_robust(f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/")
+    routing_key = "from_bot_to_handler"
+    channel: aio_pika.abc.AbstractChannel = await connection.channel()
+    await channel.default_exchange.publish(aio_pika.Message(body=f'{message.text}'.encode()), routing_key=routing_key)
+    await connection.close()
 
 
 @dp.message(F.text)
 async def type_of_responce(message: types.Message):
-    await listener(message)
+    await to_queue(message)
     pass
 
 
@@ -85,8 +115,9 @@ async def get_name(message: types.Message):
     pass
 
 
-async def start_polling(config : config.TelegramConfig):
-    bot = Bot(config.token)
+async def start_polling():
+    bot = Bot(TelegramConfig().token)
     await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot)
     print("log: 200")
+    await dp.start_polling(bot)
+
