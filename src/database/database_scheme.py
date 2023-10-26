@@ -19,22 +19,23 @@ def create_metadata():
                  )
 
     variants = Table('variants', metadata,
-                     Column('id', Integer(), primary_key=True, autoincrement=True),
-                     Column('name', Text(), nullable=False),
-                     Column('count', Integer(), nullable=False),
-                     Column('lab_id', Integer(), ForeignKey("users.id")),
-                     )
+                 Column('id', Integer(), primary_key=True, autoincrement=True),
+                 Column('name', Text(), nullable=False),
+                 Column('count', Integer(), nullable=False),
+                 Column('lab_id', Integer(), ForeignKey("users.id")),
+                 )
 
     users_variants = Table("users_variants", metadata,
-                           Column('id', Integer(), primary_key=True, autoincrement=True),
-                           Column('user_id', Integer(), ForeignKey("users.id")),
-                           Column('variant_id', Integer(), ForeignKey("variants.id"))
-                           )
+                 Column('id', Integer(), primary_key=True, autoincrement=True),
+                 Column('user_id', Integer(), ForeignKey("users.id")),
+                 Column('variant_id', Integer(), ForeignKey("variants.id"))
+                 )
 
     tokens = Table("tokens", metadata,
-                   Column('id', Integer(), primary_key=True, autoincrement=True),
-                   Column("token", Text()),
-                   Column("role", Text()),
-                   Column("count_of_activation", Integer())
-                   )
+                 Column('id', Integer(), primary_key=True, autoincrement=True),
+                 Column("token", Text()),
+                 Column("role", Text()),
+                 Column("count_of_activation", Integer())
+                 )
     return metadata
+
