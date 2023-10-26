@@ -1,5 +1,18 @@
 version: "3.9"
 services:
+  rabbitmq:
+    image: rabbitmq:3.11.0-management
+    container_name: rabbimq
+    hostname: line
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+    volumes:
+      - ./rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    restart: always
   db:
     image: postgres:latest
     restart: unless-stopped
