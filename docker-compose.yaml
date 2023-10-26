@@ -14,3 +14,13 @@ services:
       - "5432:5432"
     networks:
       - default
+  telegram:
+    restart: unless-stopped
+    build:
+      .
+    command:
+      python3 main.py
+    depends_on:
+      - db
+    networks:
+      - default
