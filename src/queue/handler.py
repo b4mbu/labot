@@ -4,6 +4,13 @@ from config.config import RabbitMQConfig
 import aio_pika
 import traceback, sys
 
+from src.database                import db_session
+from src.database.labs           import Lab
+from src.database.tokens         import Token
+from src.database.users          import User
+from src.database.variants       import Variant
+from src.database.users_variants import UserVariant
+
 if __name__ == "__main__":
     db_session.global_init()
 
@@ -30,3 +37,23 @@ if __name__ == "__main__":
 
                     if queue.name in message.body.decode():
                         break
+"""
+type |        description                      
+------------------------------------------      
+   0 | узнать свой вариант на все лабы
+   1 | узнать свой вариант/оценку/дедлайн по лабе Х
+   2 | выбрать вариант на лабу Х 
+   3 | поменять вариант по лабе Х
+   4 |
+   5 | 
+   6 | 
+   7 | посмотреть список всех вариантов по (группе/лабе/варианту)
+   8 | посмотреть всеx пользователей с ролью У 
+   9 | создать лабу Х
+   10| выдать лабу Х (установить дедлайн, способ выдачи вариантов)
+   11| создать вариант X для лабы У (возможно загрузить это файлом)
+   12| создать токен для регистрации (кол-во активаций)
+   13| удалить токен для регистрации
+   14| удалить пользователя
+"""
+
