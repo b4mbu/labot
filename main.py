@@ -18,7 +18,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    db_session.global_init(DatabaseConfig())
+    db_session.global_init()
     asyncio.run(main())
 
     # asyncio.run(telegram.start_polling())
