@@ -88,7 +88,7 @@ async def to_queue(message):
     connection: aio_pika.RobustConnection = await aio_pika.connect_robust(f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/")
     routing_key = "from_bot_to_handler"
     channel: aio_pika.abc.AbstractChannel = await connection.channel()
-    await channel.default_exchange.publish(aio_pika.Message(body=f'{message}'.encode()), routing_key=routing_key)
+    await channel.default_exchange.publish(aio_pika.Message(body=f'{json.dumps({"type": 0, "val": message.text})}'.encode()), routing_key=routing_key)
     print(2, message)
     await connection.close()
 
