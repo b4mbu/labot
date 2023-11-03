@@ -39,6 +39,7 @@ async def handler_waiting():
                     await process_request(message.body.decode())
                     if queue.name in message.body.decode():
                         break
+    await connection.close()
 """
 type |        description                      
 ------------------------------------------      
@@ -59,4 +60,3 @@ type |        description
    14| удалить пользователя
 """
 
-    await connection.close()
