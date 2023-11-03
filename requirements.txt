@@ -4,3 +4,4 @@ asyncio==3.4.3
 python-decouple==3.8
 aio-pika==9.3.0
 SQLAlchemy-serializer==1.4.1
+aiogram-dialog==2.0.0

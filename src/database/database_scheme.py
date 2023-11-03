@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String, Text, ForeignKey
+from sqlalchemy import MetaData, Table, Column, Integer, String, Text, ForeignKey, BigInteger
 
 
 def create_metadata():
@@ -8,7 +8,7 @@ def create_metadata():
                  Column('id', Integer(), primary_key=True, autoincrement=True),
                  Column('user', Text(), nullable=False),
                  Column('full_name', Text(), nullable=False),
-                 Column('telegram_id', Integer(), nullable=False)
+                 Column('telegram_id', BigInteger(), nullable=False)
                  )
 
     labs = Table('labs', metadata,

@@ -11,7 +11,7 @@ class User(SqlAlchemyBase, SerializerMixin):
     id          = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     role        = sqlalchemy.Column(sqlalchemy.Text)
     full_name   = sqlalchemy.Column(sqlalchemy.Text)
-    telegram_id = sqlalchemy.Column(sqlalchemy.Integer)
+    telegram_id = sqlalchemy.Column(sqlalchemy.BigInteger)
 
     def __init__(self, role: str, full_name: str, telegram_id: int):
         self.role        = role
@@ -20,4 +20,3 @@ class User(SqlAlchemyBase, SerializerMixin):
 
     def __str__(self):
         return f"(id={self.id}, role={self.role}, name={self.full_name}, tg_id={self.telegram_id})"
-
