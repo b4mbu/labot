@@ -11,13 +11,14 @@ SqlAlchemyBase = dec.declarative_base()
 __factory = None
 
 
-def global_init(config: config.DatabaseConfig):
+def global_init():
     global __factory
 
     if __factory:
         return
+    conf = config.DatabaseConfig()
 
-    conn_str = f'postgresql://{config.username}:{config.password}@{config.host}:{config.port}/{config.db_name}'
+    conn_str = f'postgresql://{conf.username}:{conf.password}@{conf.host}:{conf.port}/{conf.db_name}'
     print(f'Connected to database {conn_str}')
 
     engine = sa.create_engine(conn_str)
