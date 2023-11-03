@@ -13,3 +13,11 @@ class Token(SqlAlchemyBase, SerializerMixin):
     role                = sqlalchemy.Column(sqlalchemy.Text)
     count_of_activation = sqlalchemy.Column(sqlalchemy.Integer)
 
+    def __init__(self, token_str: str, role: str, count_of_activation: int):
+        self.token               = token_str
+        self.role                = role
+        self.count_of_activation = count_of_activation
+
+    def __str__(self):
+        return f"(id={self.id}, token={self.token}, role={self.role}, cnt={self.count_of_activation})"
+
