@@ -3,6 +3,8 @@ from aiogram.filters.command import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from config import config
 from config.config import TelegramConfig, RabbitMQConfig
+from aiogram.filters.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
 from time import sleep
 from src.database import db_session
 from src.database.labs import Lab
@@ -14,17 +16,26 @@ import aio_pika
 import json
 import asyncio
 
+
+class Gen(StatesGroup):
+    just_chill = State()
+    wait_token = State()
+
+
 dp = Dispatcher()
 global_rmq_config = ""
 
+
 @dp.message(Command("start"))
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, state: FSMContext):
+    print(message.chat.id)
     await message.answer("Привет, я телеграм бот, который позволяет создавать и раздавать лабы студентам")
     await message.answer("Авторизуйтесь с помощью команды: /auth")
+    await state.set_state(Gen.just_chill)
 
 
 @dp.message(Command("help"))
-async def cmd_help(message: types.Message):
+async def cmd_help(message: types.Message, state: FSMContext):
     await message.answer("""
 Команды:
 /start - запустить бота
@@ -33,35 +44,15 @@ async def cmd_help(message: types.Message):
 """)
 
 
-f = '''
 @dp.message(Command("auth"))
-async def cmd_authorization(message: types.Message):
+async def cmd_authorization(message: types.Message, state: FSMContext):
     await message.answer("Введите токен:")
+    await state.set_state(Gen.wait_token)
 
-    @dp.message(F.text)
-    async def check_token(message: types.Message):
-        connection_params = pika.ConnectionParameters('localhost', 5672)
-        connection = pika.BlockingConnection(connection_params)
-        channel = connection.channel()
 
-        channel.queue_declare(queue="from_bot_to_handler", durable=True)
-        channel.basic_publish(exchange='',
-                              routing_key='from_bot_to_handler',
-                              body=json.dumps([message.chat.id,
-                                               user_currency,
-                                               user_limit,
-                                               user_bank,
-                                               user_stock_markets]),
-                              properties=pika.BasicProperties(
-                                  delivery_mode=2
-                              ))
-        markup = types.ReplyKeyboardMarkup()
-        buttons = [START_OVER_BUTTON, HELP_BUTTON]
-        markup.add(*buttons)
-        mess = 'Работаем...'
-        bot.send_message(message.chat.id, mess, reply_markup=markup)
-        connection.close()
-'''
+@dp.message(F.text, Gen.wait_token)
+async def check_token(message: types.Message):
+    await to_queue(json.dumps({"type": 0, "token": message.text}))
 
 
 async def from_queue():
@@ -70,7 +61,7 @@ async def from_queue():
     )
 
     async with connection:
-        queue_name = "from_bot_to_handler"
+        queue_name = "from_handler_to_bot"
         # Creating channel
         channel: aio_pika.abc.AbstractChannel = await connection.channel()
 
@@ -84,10 +75,12 @@ async def from_queue():
             # Cancel consuming after __aexit__
             async for message in queue_iter:
                 async with message.process():
-                    print(message.body.decode())
+                    print(1, message.body.decode())
 
                     if queue.name in message.body.decode():
                         break
+    # это скорее всего не нужно, но не факт ! await connection.close()
+    # TODO выяснить нужная ли это штука
     print("close")
 
 
@@ -95,12 +88,14 @@ async def to_queue(message):
     connection: aio_pika.RobustConnection = await aio_pika.connect_robust(f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/")
     routing_key = "from_bot_to_handler"
     channel: aio_pika.abc.AbstractChannel = await connection.channel()
-    await channel.default_exchange.publish(aio_pika.Message(body=f'{message.text}'.encode()), routing_key=routing_key)
+    await channel.default_exchange.publish(aio_pika.Message(body=f'{message}'.encode()), routing_key=routing_key)
+    print(2, message)
     await connection.close()
 
 
 @dp.message(F.text)
 async def type_of_responce(message: types.Message):
+    print(message.text)
     await to_queue(message)
     pass
 
