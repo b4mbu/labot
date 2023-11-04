@@ -11,9 +11,11 @@ import string
 
 
 def check_token_role(token_str: str) -> str:
+    print("need to check: ", token_str)
     session = db_session.create_session()
     tokens_result = session.query(Token).filter(Token.token == token_str, Token.count_of_activation > 0).all()
     result = json.dumps({"status": "fail"})
+    print("tmp res:", result)
 
     if tokens_result:
         session.query(Token).filter(
@@ -21,12 +23,15 @@ def check_token_role(token_str: str) -> str:
                 ).update({
                     Token.count_of_activation : tokens_result[0].count_of_activation - 1
                     })
+        print("tmp res:1", result)
         session.commit()
         result = json.dumps({
             "status": "ok",
             "role":   tokens_result[0].role,
             })
+        print("tmp res:", result)
     session.close()
+    print("res:", result)
     return result
 
 def add_new_token(role: str, count_of_activation: int) -> str:

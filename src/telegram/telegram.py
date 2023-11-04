@@ -52,15 +52,17 @@ async def cmd_authorization(message: types.Message, state: FSMContext):
 
 @dp.message(F.text, Gen.wait_token)
 async def check_token(message: types.Message):
-    await to_queue(json.dumps({"type": 0, "token": message.text}))
+    await to_queue(json.dumps({"type": 1, "token": message.text}))
 
 
 async def from_queue():
+    print("s")
     connection = await aio_pika.connect_robust(
         f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/"
     )
 
     async with connection:
+        print("s1")
         queue_name = "from_handler_to_bot"
         # Creating channel
         channel: aio_pika.abc.AbstractChannel = await connection.channel()
@@ -70,44 +72,38 @@ async def from_queue():
             queue_name,
             auto_delete=True
         )
-        fl = 1
+        
         async with queue.iterator() as queue_iter:
             # Cancel consuming after __aexit__
+            print("s2")
             async for message in queue_iter:
+                print("s3")
                 async with message.process():
                     print(1, message.body.decode())
 
                     if queue.name in message.body.decode():
                         break
-    # это скорее всего не нужно, но не факт ! await connection.close()
-    # TODO выяснить нужная ли это штука
-    print("close")
 
 
 async def to_queue(message):
     connection: aio_pika.RobustConnection = await aio_pika.connect_robust(f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/")
     routing_key = "from_bot_to_handler"
     channel: aio_pika.abc.AbstractChannel = await connection.channel()
-    await channel.default_exchange.publish(aio_pika.Message(body=f'{json.dumps({"type": 0, "val": message.text})}'.encode()), routing_key=routing_key)
-    print(2, message)
+    await channel.default_exchange.publish(aio_pika.Message(body=message.encode()), routing_key=routing_key)
     await connection.close()
+    print("added to queue", message)
 
 
 @dp.message(F.text)
 async def type_of_responce(message: types.Message):
-    print(message.text)
-    await to_queue(message)
-    await to_queue(json.dumps({"type": 0, "token": message.text}))
-    pass
+    print("here", message.text)
+    await to_queue(json.dumps({"type": 1, "token": message.text}))
+    #a = message.text.split()
+    #await to_queue(json.dumps({"type": 0, "role": a[0], "count_of_activation": a[1]}))
 
 
 @dp.message(F.text.split(".").len() == 5)
 async def get_date(message: types.Message):
-    pass
-
-
-@dp.message(F.text)
-async def get_name(message: types.Message):
     pass
 
 
