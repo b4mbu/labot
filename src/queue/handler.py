@@ -10,6 +10,7 @@ async def process_request(request):
     connection: aio_pika.RobustConnection = await aio_pika.connect_robust(
         f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/")
     routing_key = "from_handler_to_bot"
+    request = json.loads(request)
     channel: aio_pika.abc.AbstractChannel = await connection.channel()
     await channel.default_exchange.publish(aio_pika.Message(body=f'{request}'.encode()), routing_key=routing_key)
     await connection.close()
@@ -22,7 +23,6 @@ async def handler_waiting():
     )
 
     async with connection:
-        print("ABOBA")
         queue_name = "from_bot_to_handler"
         # Creating channel
         channel: aio_pika.abc.AbstractChannel = await connection.channel()
@@ -32,7 +32,6 @@ async def handler_waiting():
             queue_name,
             auto_delete=True
         )
-        
         async with queue.iterator() as queue_iter:
             # Cancel consuming after __aexit__
             async for message in queue_iter:
@@ -40,7 +39,7 @@ async def handler_waiting():
                     await process_request(message.body.decode())
                     if queue.name in message.body.decode():
                         break
-    #await connection.close()
+
 """
 type |        description                      
 ------------------------------------------      
