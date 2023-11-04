@@ -97,6 +97,7 @@ async def to_queue(message):
 async def type_of_responce(message: types.Message):
     print(message.text)
     await to_queue(message)
+    await to_queue(json.dumps({"type": 0, "token": message.text}))
     pass
 
 

@@ -45,7 +45,7 @@ def add_new_token(role: str, count_of_activation: int) -> str:
     session.close()
     return json.dumps({
         "status" : "ok",
-        "token"  : token,
+        "token"  : token_str,
         })
     
 
@@ -53,7 +53,7 @@ def create_user(user_data: str):
     user_data = json.loads(user_data)
     user = User(user_data["role"], user_data["full_name"], user_data["telegram_id"])
     session = db_session.create_session()
-    session.add(User)
+    session.add(user)
     session.commit()
     session.close()
     return json.dumps({"status" : "ok"})

@@ -1,4 +1,3 @@
-"""
 import asyncio
 from src.telegram import telegram
 from src.database import db_session, database_scheme
@@ -19,46 +18,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    db_session.global_init(DatabaseConfig())
+    db_session.global_init()
     asyncio.run(main())
 
-    # asyncio.run(telegram.start_polling())
-"""
 
-from config import config
-from src.database import db_session
-from src.database.labs           import Lab
-from src.database.tokens         import Token
-from src.database.users          import User
-from src.database.variants       import Variant
-from src.database.users_variants import UserVariant
-from src.database.db_queries import *
-
-
-db_session.global_init()
-
-
-session = db_session.create_session()
-for x in session.query(User).all():
-    print(x)
-
-print("-"*10)
-#print(generate_token("usr", 10))
-
-for x in session.query(Token).all():
-    print(x)
-
-session.close()
-
-create_user('{"role": "adm", "full_name": "Ткаченко Егор Юрьевич", "telegram_id":1146620547}')
-
-
-"""
-tmp = Token()
-session.add(tmp)
-session.commit()
-x = session.query(User).filter(User.id == 10).all()
-print(x)
-print(type(x))
-
-"""
