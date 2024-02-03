@@ -13,3 +13,8 @@ class Lab(SqlAlchemyBase, SerializerMixin):
     description = sqlalchemy.Column(sqlalchemy.Text)
     creator_id  = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
 
+    def __init__(self, name: str, description: str, creator_id: int):
+        self.name = name
+        self.description = description
+        self.creator_id = creator_id
+

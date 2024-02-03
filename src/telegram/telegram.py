@@ -8,6 +8,7 @@ from aiogram.fsm.context import FSMContext
 from time import sleep
 from src.database import db_session
 from src.database.labs import Lab
+from src.database.db_queries import check_token_role, create_user, create_lab
 from src.database.tokens import Token
 from src.database.users import User
 from src.database.variants import Variant
@@ -18,8 +19,9 @@ import asyncio
 
 
 class Gen(StatesGroup):
-    just_chill = State()
-    wait_token = State()
+    just_chill     = State()
+    wait_token     = State()
+    wait_full_name = State()
 
 
 dp = Dispatcher()
@@ -28,7 +30,6 @@ global_rmq_config = ""
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message, state: FSMContext):
-    print(message.chat.id)
     await message.answer("Привет, я телеграм бот, который позволяет создавать и раздавать лабы студентам")
     await message.answer("Авторизуйтесь с помощью команды: /auth")
     await state.set_state(Gen.just_chill)
@@ -50,55 +51,34 @@ async def cmd_authorization(message: types.Message, state: FSMContext):
     await state.set_state(Gen.wait_token)
 
 
+@dp.message(Command("add_lab"))
+async def cmd_add_lab(message: types.Message, state: FSMContext):
+    text = message.text
+    splitted = text.split('\n')
+    name = splitted[0]
+    description = '\n'.join(splitted[1:])
+    if create_lab(name, description, message.from_user.id):
+        await message.answer(f"Лабораторная работа {name} была создана")
+        return
+    await message.answer("Произошла ошибка")
+
+
 @dp.message(F.text, Gen.wait_token)
 async def check_token(message: types.Message):
-    await to_queue(json.dumps({"type": 0, "token": message.text}))
-
-
-async def from_queue():
-    connection = await aio_pika.connect_robust(
-        f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/"
-    )
-
-    async with connection:
-        queue_name = "from_handler_to_bot"
-        # Creating channel
-        channel: aio_pika.abc.AbstractChannel = await connection.channel()
-
-        # Declaring queue
-        queue: aio_pika.abc.AbstractQueue = await channel.declare_queue(
-            queue_name,
-            auto_delete=True
-        )
-        fl = 1
-        async with queue.iterator() as queue_iter:
-            # Cancel consuming after __aexit__
-            async for message in queue_iter:
-                async with message.process():
-                    print(1, message.body.decode())
-
-                    if queue.name in message.body.decode():
-                        break
-    # это скорее всего не нужно, но не факт ! await connection.close()
-    # TODO выяснить нужная ли это штука
-    print("close")
-
-
-async def to_queue(message):
-    connection: aio_pika.RobustConnection = await aio_pika.connect_robust(f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/")
-    routing_key = "from_bot_to_handler"
-    channel: aio_pika.abc.AbstractChannel = await connection.channel()
-    await channel.default_exchange.publish(aio_pika.Message(body=f'{json.dumps({"type": 0, "val": message.text})}'.encode()), routing_key=routing_key)
-    print(2, message)
-    await connection.close()
-
+    token = message.text
+    response = json.loads(check_token_role(token))
+    if response["status"] == "fail":
+        await message.answer("Неверный токен")
+        return
+    role = response["role"]
+    create_user(message.from_user.id, role, message.from_user.id)
+    await message.answer("Вход выполнен")
 
 @dp.message(F.text)
-async def type_of_responce(message: types.Message):
+async def type_of_response(message: types.Message):
     print(message.text)
     await to_queue(message)
     await to_queue(json.dumps({"type": 0, "token": message.text}))
-    pass
 
 
 @dp.message(F.text.split(".").len() == 5)

@@ -49,9 +49,8 @@ def add_new_token(role: str, count_of_activation: int) -> str:
         })
     
 
-def create_user(user_data: str):
-    user_data = json.loads(user_data)
-    user = User(user_data["role"], user_data["full_name"], user_data["telegram_id"])
+def create_user(full_name: str, role: str, telegram_id: str):
+    user = User(role, full_name, telegram_id)
     session = db_session.create_session()
     session.add(user)
     session.commit()
@@ -59,14 +58,17 @@ def create_user(user_data: str):
     return json.dumps({"status" : "ok"})
 
 
-
-
-
-
-
-
-
-
+def create_lab(name: str, description: str, creator_telegram_id: str) -> bool:
+    session = db_session.create_session()
+    user = session.query(User).filter(User.telegram_id == creator_telegram_id and User.role == "admin").first()
+    if user is None:
+        session.close()
+        return False
+    lab = Lab(name, description, user.id)
+    session.add(lab)
+    session.commit()
+    session.close()
+    return True
 
 def tmpl():
     session = db_session.create_session()
