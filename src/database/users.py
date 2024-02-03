@@ -19,4 +19,4 @@ class User(SqlAlchemyBase, SerializerMixin):
         self.telegram_id = telegram_id
 
     def __str__(self):
-        return f"role={self.role}, (name={self.full_name}, tg_id={self.telegram_id})"
+        return f"role={self.role}, name={self.full_name}, tg_id={self.telegram_id}"

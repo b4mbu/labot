@@ -19,5 +19,5 @@ class Token(SqlAlchemyBase, SerializerMixin):
         self.count_of_activation = count_of_activation
 
     def __str__(self):
-        return f"(id={self.id}, token={self.token}, role={self.role}, cnt={self.count_of_activation})"
+        return f"role={self.role}, cnt={self.count_of_activation}, token={self.token}"
 

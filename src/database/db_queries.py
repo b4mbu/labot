@@ -86,19 +86,26 @@ def create_lab(name: str, description: str, creator_telegram_id: str) -> bool:
     session.close()
     return True
 
-def get_all_labs():
+def get_all_items_as_one_string(Table):
     session = db_session.create_session()
-    labs = session.query(Lab).all()
+    items = session.query(Table).all()
     session.close()
-    return "\n\n".join(list([str(lab) for lab in labs]))
+    return '\n'.join(sorted([str(item) for item in items]))
 
-def get_all_users():
+def get_all_labs_as_one_string():
+    return get_all_items_as_one_string(Lab)
+
+def get_all_users_as_one_string():
+    return get_all_items_as_one_string(User)
+
+def get_all_tokens_as_one_string():
+    return get_all_items_as_one_string(Token)
+
+def remove_token(token: str) -> bool:
     session = db_session.create_session()
-    users = session.query(User).all()
+    deleted = session.query(Token).filter_by(token=token).delete()
     session.close()
-    return '\n'.join(sorted([str(user) for user in users]))
-
-
+    return deleted > 0 # достаточно ≠ 0, но на всякий так 
 
 
 def tmpl():
