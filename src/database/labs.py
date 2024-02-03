@@ -18,3 +18,7 @@ class Lab(SqlAlchemyBase, SerializerMixin):
         self.description = description
         self.creator_id = creator_id
 
+    def __str__(self):
+        return f"Название:\n{self.name}\nОписание:\n{self.description}"
+
+

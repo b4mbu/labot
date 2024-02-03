@@ -21,6 +21,7 @@ def create_metadata():
     variants = Table('variants', metadata,
                  Column('id', Integer(), primary_key=True, autoincrement=True),
                  Column('name', Text(), nullable=False),
+                 Column('task', Text(), nullable=False),
                  Column('count', Integer(), nullable=False),
                  Column('lab_id', Integer(), ForeignKey("users.id")),
                  )
