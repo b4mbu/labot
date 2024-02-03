@@ -89,9 +89,17 @@ def create_lab(name: str, description: str, creator_telegram_id: str) -> bool:
 def get_all_labs():
     session = db_session.create_session()
     labs = session.query(Lab).all()
-    res = "\n\n".join(list([str(lab) for lab in labs]))
     session.close()
-    return res
+    return "\n\n".join(list([str(lab) for lab in labs]))
+
+def get_all_users():
+    session = db_session.create_session()
+    users = session.query(User).all()
+    session.close()
+    return '\n'.join(sorted([str(user) for user in users]))
+
+
+
 
 def tmpl():
     session = db_session.create_session()
