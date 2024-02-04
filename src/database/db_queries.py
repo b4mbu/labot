@@ -86,6 +86,18 @@ def create_lab(name: str, description: str, creator_telegram_id: str) -> bool:
     session.close()
     return True
 
+def add_user_variant(user_telegram_id: str, variant_id: str) -> bool:
+    session = db_session.create_session()
+    user = session.query(User).filter(User.telegram_id == user_telegram_id).first()
+    if user is None:
+        session.close()
+        return False
+    user_variant = UserVariant(user.id, variant_id)
+    session.add(user_variant)
+    session.commit()
+    session.close()
+    return True
+
 def get_all_items_as_one_string(Table):
     session = db_session.create_session()
     items = session.query(Table).all()

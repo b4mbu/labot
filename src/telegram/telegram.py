@@ -128,7 +128,7 @@ async def check_token(message: types.Message, state: FSMContext):
         return
     await state.update_data(role=response["role"])
     await message.answer("Введите ФИО:")
-    await state.set_state(Gen.wait_full_name)
+    await state.set_state(Gen.auth_wait_full_name)
 
 @dp.message(F.text, Gen.auth_wait_full_name)
 async def auth_new_user(message: types.Message, state: FSMContext):

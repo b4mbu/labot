@@ -12,3 +12,7 @@ class UserVariant(SqlAlchemyBase, SerializerMixin):
     user_id    = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     variant_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("variants.id"))
 
+    def __init__(self, user_id: str, variant_id: str):
+        self.user_id = user_id
+        self.variant_id = variant_id
+
