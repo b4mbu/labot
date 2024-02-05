@@ -20,3 +20,7 @@ class Variant(SqlAlchemyBase, SerializerMixin):
         self.count  = count
         self.lab_id = lab_id
 
+    def __str__(self):
+        return f"name={self.name}, task={self.task}, left={self.count}"
+
+

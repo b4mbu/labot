@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from time import sleep
 from src.database import db_session
 from src.database.labs import Lab
-from src.database.db_queries import check_token_role, create_user, create_lab, get_all_labs_as_one_string, is_admin, is_stud, is_exist_user, get_all_users_as_one_string, get_all_tokens_as_one_string, remove_token
+from src.database.db_queries import check_token_role, create_user, create_lab, get_all_labs_as_one_string, is_admin, is_stud, is_exist_user, get_all_users_as_one_string, get_all_tokens_as_one_string, remove_token, get_variants_for_lab
 from src.database.tokens import Token
 from src.database.users import User
 from src.database.variants import Variant
@@ -19,16 +19,19 @@ import asyncio
 
 
 class Gen(StatesGroup):
-    just_chill          = State()
+    just_chill               = State()
     # регистрация 
-    auth_wait_token     = State()
-    auth_wait_full_name = State()
+    auth_wait_token          = State()
+    auth_wait_full_name      = State()
 
     # создание лабы
-    wait_lab_data       = State()
+    wait_lab_data            = State()
 
     # удаление токена
-    remove_wait_token   = State() 
+    remove_wait_token        = State() 
+
+    # просмотр доступных вариантов
+    show_var_wait_lab_name = State()
 
 
 
@@ -48,6 +51,7 @@ async def cmd_help(message: types.Message, state: FSMContext):
             /start - запустить бота
             /help - прочитать справочную информацию о боте
             /auth - авторизоваться
+            /show_vars - посмотреть список вариантов одной лабы
         """
     if is_admin(message.from_user.id):
         res = """
@@ -57,6 +61,7 @@ async def cmd_help(message: types.Message, state: FSMContext):
             /auth - авторизоваться
             /add_lab - создать новую лабораторную
             /show_labs - посмотреть список всех лаб
+            /show_vars - посмотреть список вариантов одной лабы
             /show_users - посмотреть всех пользователей
             /show_tokens - глянуть все токены (осторожно)
             /remove_token - удалить регистрационный токен
@@ -117,6 +122,10 @@ async def cmd_remove_token(message: types.Message, state: FSMContext):
     await message.answer("Введите токен, который нужно удалить: <token>")
     await state.set_state(Gen.remove_wait_token)
 
+@dp.message(Command("show_vars"))
+async def cmd_show_vars(message: types.Message, state: FSMContext):
+    await message.answer("Введите название лабы, у которой нужно посмотреть варианты: <название>")
+    await state.set_state(Gen.show_var_wait_lab_name)
 
 
 @dp.message(F.text, Gen.auth_wait_token)
@@ -124,7 +133,7 @@ async def check_token(message: types.Message, state: FSMContext):
     token = message.text
     response = json.loads(check_token_role(token))
     if response["status"] == "fail":
-        await message.answer("Неверный токен")
+        await message.answer("Неверный токен, попробуйте другой")
         return
     await state.update_data(role=response["role"])
     await message.answer("Введите ФИО:")
@@ -139,26 +148,38 @@ async def auth_new_user(message: types.Message, state: FSMContext):
     await state.clear()    # удалит данные в state (user_data["role"]) -> removed
 
 @dp.message(F.text, Gen.wait_lab_data)
-async def create_new_lab(message: types.Message):
+async def create_new_lab(message: types.Message, state: FSMContext):
     text = message.text
     splitted = text.split('\n')
     name = splitted[0]
     description = '\n'.join(splitted[1:])
     if create_lab(name, description, message.from_user.id):
         await message.answer(f"Лабораторная работа \"{name}\" была создана")
+        await state.clear()
         return
     await message.answer("Произошла ошибка")
 
 @dp.message(F.text, Gen.remove_wait_token)
-async def remove_token_from_table(message: types.Message):
+async def remove_token_from_table(message: types.Message, state: FSMContext):
     if not is_admin(message.from_user.id):
         await message.answer("Пока нет доступа(")
         return
     token = message.text.strip()
     if remove_token(token):
         await message.answer(f"Токен \"{token}\" был успешно удалён")
+        await state.clear()
         return
     await message.answer("Неверный токен")
+
+@dp.message(F.text, Gen.show_var_wait_lab_name)
+async def show_variants(message: types.Message, state: FSMContext):
+    variants = get_variants_for_lab(message.text)
+    if len(variants) == 0:
+        await message.answer("Пока пусто!")
+        await state.clear()
+        return
+    await message.answer(variants)
+    await state.clear()
 
 
 

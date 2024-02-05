@@ -19,8 +19,6 @@ def global_init():
     conf = config.DatabaseConfig()
 
     conn_str = f'postgresql://{conf.username}:{conf.password}@{conf.host}:{conf.port}/{conf.db_name}'
-    print(f'Connected to database {conn_str}')
-
     engine = sa.create_engine(conn_str)
     #Следующие две строчки нужно раскомментировать, только если вы хотите создать пустую базу данных
     #metadata = create_metadata()
