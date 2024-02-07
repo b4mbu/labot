@@ -19,17 +19,20 @@ import asyncio
 
 
 class Gen(StatesGroup):
-    just_chill          = State()
-    # регистрация 
+    just_chill = State()
+
+    # authentification 
     auth_wait_token     = State()
     auth_wait_full_name = State()
 
-    # создание лабы
-    wait_lab_data       = State()
+    # create lab 
+    create_lab_wait_data = State()
 
-    # удаление токена
-    remove_wait_token   = State() 
+    # remove token 
+    token_remove_wait_token = State() 
 
+    # choose variant
+    variant_wait_name = State() 
 
 
 dp = Dispatcher()
@@ -74,7 +77,7 @@ async def cmd_authorization(message: types.Message, state: FSMContext):
 @dp.message(Command("add_lab"))
 async def cmd_add_lab(message: types.Message, state: FSMContext):
     await message.answer("Введите данные лабораторной работы в формате:\n<название>\n\n<описание>")
-    await state.set_state(Gen.wait_lab_data)
+    await state.set_state(Gen.create_lab_wait_data)
 
 @dp.message(Command("show_labs"))
 async def cmd_show_labs(message: types.Message, state: FSMContext):
@@ -115,7 +118,7 @@ async def cmd_remove_token(message: types.Message, state: FSMContext):
         await message.answer("Пока нет доступа(")
         return
     await message.answer("Введите токен, который нужно удалить: <token>")
-    await state.set_state(Gen.remove_wait_token)
+    await state.set_state(Gen.token_remove_wait_token)
 
 
 
@@ -138,7 +141,7 @@ async def auth_new_user(message: types.Message, state: FSMContext):
     await message.answer("Вход выполнен")
     await state.clear()    # удалит данные в state (user_data["role"]) -> removed
 
-@dp.message(F.text, Gen.wait_lab_data)
+@dp.message(F.text, Gen.create_lab_wait_data)
 async def create_new_lab(message: types.Message):
     text = message.text
     splitted = text.split('\n')
@@ -149,7 +152,7 @@ async def create_new_lab(message: types.Message):
         return
     await message.answer("Произошла ошибка")
 
-@dp.message(F.text, Gen.remove_wait_token)
+@dp.message(F.text, Gen.token_remove_wait_token)
 async def remove_token_from_table(message: types.Message):
     if not is_admin(message.from_user.id):
         await message.answer("Пока нет доступа(")
