@@ -73,12 +73,7 @@ def add_new_token(role: str, count_of_activation: int) -> str:
     session.add(token)
     session.commit()
     session.close()
-    return json.dumps(
-        {
-            "status": "ok",
-            "token": token_str,
-        }
-    )
+    return token_str
 
 
 def create_user(full_name: str, role: str, telegram_id: str):

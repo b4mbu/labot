@@ -14,6 +14,7 @@ from src.database.db_queries import (
     get_all_tokens_as_one_string,
     remove_token,
     get_variants_for_lab,
+    add_new_token,
 )
 import json
 
@@ -33,6 +34,10 @@ class Gen(StatesGroup):
     variant_create_wait_lab_name = State()
     variant_create_wait_name = State()
     variant_create_wait_descruption = State()
+
+    # create token
+    token_create_wait_role = State()
+    token_create_wait_count = State()
 
     # remove token
     token_remove_wait_token = State()
@@ -69,6 +74,7 @@ async def cmd_help(message: types.Message, state: FSMContext):
             /help - прочитать справочную информацию о боте
             /auth - авторизоваться
             /add_lab - создать новую лабораторную
+            /add_token - создать токен для авторизаций
             /show_labs - посмотреть список всех лаб
             /show_vars - посмотреть список вариантов одной лабы
             /show_users - посмотреть всех пользователей
@@ -116,6 +122,13 @@ async def cmd_show_users(message: types.Message, state: FSMContext):
         return
     await message.answer(users)
 
+@dp.message(Command("add_token"))
+async def cmd_add_token(message: types.Message, state: FSMContext):
+    if not is_admin(message.from_user.id):
+        await message.answer("Пока нет доступа(")
+        return
+    await state.set_state(Gen.token_create_wait_role)
+    await message.answer("Выберите роль, которую будет давать токен Adnim/User\n(TODO: сделать кнопку выбора)")
 
 @dp.message(Command("show_tokens"))
 async def cmd_show_tokens(message: types.Message, state: FSMContext):
@@ -187,6 +200,34 @@ async def create_new_lab_get_description(message: types.Message, state: FSMConte
     await message.answer("Произошла ошибка")
     await state.clear()
 
+@dp.message(F.text, Gen.token_create_wait_role)
+async def prepare_token(message: types.Message, state: FSMContext):
+    role = message.text.strip().lower()
+    if role not in ["admin", "user"]:
+        await message.answer("Введите одно слово: admin или user!")
+        return
+    await state.update_data(role=role)
+    await message.answer("Введите количество активаций токена:")
+    await state.set_state(Gen.token_create_wait_count)
+
+@dp.message(F.text, Gen.token_create_wait_count)
+async def add_new_token_to_db(message: types.Message, state: FSMContext):
+    count = message.text.strip().lower()
+    try:
+        count = int(count)
+    except Exception:
+        count = 0
+    if count < 1 or count > 999:
+        await message.answer("Введите натуральное число!")
+        return
+    user_data = await state.get_data()
+    role = user_data["role"]
+    token = add_new_token(role, count)
+    if token == "":
+        await message.answer("Произошел сбой, извините за неудобство(")
+    else:
+        await message.answer(token)
+    await state.clear()
 
 @dp.message(F.text, Gen.token_remove_wait_token)
 async def remove_token_from_table(message: types.Message, state: FSMContext):
