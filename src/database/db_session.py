@@ -18,11 +18,13 @@ def global_init():
         return
     conf = config.DatabaseConfig()
 
-    conn_str = f'postgresql://{conf.username}:{conf.password}@{conf.host}:{conf.port}/{conf.db_name}'
+    conn_str = f"postgresql://{conf.username}:{conf.password}@{conf.host}:{conf.port}/{conf.db_name}"
+    print(f"Connected to database {conn_str}")
+
     engine = sa.create_engine(conn_str)
-    #Следующие две строчки нужно раскомментировать, только если вы хотите создать пустую базу данных
-    #metadata = create_metadata()
-    #metadata.create_all(engine)
+    # Следующие две строчки нужно раскомментировать, только если вы хотите создать пустую базу данных
+    # metadata = create_metadata()
+    # metadata.create_all(engine)
     __factory = orm.sessionmaker(bind=engine)
 
     SqlAlchemyBase.metadata.create_all(engine)
@@ -31,4 +33,3 @@ def global_init():
 def create_session() -> Session:
     global __factory
     return __factory()
-
