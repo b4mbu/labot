@@ -37,9 +37,8 @@ class Gen(StatesGroup):
     # remove token
     token_remove_wait_token = State()
 
-    # choose variant
-    variant_show_list = State()
-    variant_wait_name = State()
+    # show all variants for lab
+    variant_wait_lab_name = State()
 
 
 dp = Dispatcher()
@@ -144,7 +143,7 @@ async def cmd_show_vars(message: types.Message, state: FSMContext):
     await message.answer(
         "Введите название лабы, у которой нужно посмотреть варианты: <название>"
     )
-    await state.set_state(Gen.show_var_wait_lab_name)
+    await state.set_state(Gen.variant_wait_lab_name)
 
 
 @dp.message(F.text, Gen.auth_wait_token)
@@ -190,7 +189,7 @@ async def create_new_lab_get_description(message: types.Message, state: FSMConte
 
 
 @dp.message(F.text, Gen.token_remove_wait_token)
-async def remove_token_from_table(message: types.Message):
+async def remove_token_from_table(message: types.Message, state: FSMContext):
     if not is_admin(message.from_user.id):
         await message.answer("Пока нет доступа(")
         return
@@ -202,14 +201,13 @@ async def remove_token_from_table(message: types.Message):
     await message.answer("Неверный токен")
 
 
-@dp.message(F.text, Gen.variant_show_list)
+@dp.message(F.text, Gen.variant_wait_lab_name)
 async def show_variants(message: types.Message, state: FSMContext):
     variants = get_variants_for_lab(message.text)
     if len(variants) == 0:
         await message.answer("Пока пусто!")
-        await state.clear()
-        return
-    await message.answer(variants)
+    else:
+        await message.answer(variants)
     await state.clear()
 
 
