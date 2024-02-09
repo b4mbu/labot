@@ -8,15 +8,18 @@ import traceback, sys
 
 async def process_request(request):
     connection: aio_pika.RobustConnection = await aio_pika.connect_robust(
-        f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/")
+        f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/"
+    )
     routing_key = "from_handler_to_bot"
     request = json.loads(request)
     channel: aio_pika.abc.AbstractChannel = await connection.channel()
-    await channel.default_exchange.publish(aio_pika.Message(body=f'{request}'.encode()), routing_key=routing_key)
+    await channel.default_exchange.publish(
+        aio_pika.Message(body=f"{request}".encode()), routing_key=routing_key
+    )
     await connection.close()
 
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 async def handler_waiting():
     connection = await aio_pika.connect_robust(
         f"amqp://{RabbitMQConfig().login}:{RabbitMQConfig().password}@{RabbitMQConfig().host}/"
@@ -29,8 +32,7 @@ async def handler_waiting():
 
         # Declaring queue
         queue: aio_pika.abc.AbstractQueue = await channel.declare_queue(
-            queue_name,
-            auto_delete=True
+            queue_name, auto_delete=True
         )
         async with queue.iterator() as queue_iter:
             # Cancel consuming after __aexit__
@@ -39,6 +41,7 @@ async def handler_waiting():
                     await process_request(message.body.decode())
                     if queue.name in message.body.decode():
                         break
+
 
 """
 type |        description                      
@@ -59,4 +62,3 @@ type |        description
    13| удалить токен для регистрации
    14| удалить пользователя
 """
-
