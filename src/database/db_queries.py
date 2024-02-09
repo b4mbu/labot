@@ -106,14 +106,17 @@ def create_lab(name: str, description: str, creator_telegram_id: str) -> bool:
     session.close()
     return True
 
+
 def get_all_items(Table):
     session = db_session.create_session()
     items = session.query(Table).all()
     session.close()
     return items
 
+
 def get_all_items_as_one_string(Table):
-    return '\n'.join(sorted([str(item) for item in get_all_items(Table)]))
+    return "\n".join(sorted([str(item) for item in get_all_items(Table)]))
+
 
 def get_all_labs_as_one_string():
     return get_all_items_as_one_string(Lab)
@@ -126,15 +129,18 @@ def get_all_users_as_one_string():
 def get_all_tokens_as_one_string():
     return get_all_items_as_one_string(Token)
 
+
 def get_all_variants_as_one_string():
     return get_all_items_as_one_string(Variant)
+
 
 def get_variants_for_lab(lab_name: str):
     session = db_session.create_session()
     subquery = session.query(Lab.id).filter(Lab.name == lab_name).subquery()
     variants = session.query(Variant).filter(Variant.lab_id.in_(select(subquery)))
     session.close()
-    return '\n'.join(sorted([str(item) for item in variants]))
+    return "\n".join(sorted([str(item) for item in variants]))
+
 
 def remove_token(token: str) -> bool:
     session = db_session.create_session()

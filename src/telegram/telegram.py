@@ -13,6 +13,7 @@ from src.database.db_queries import (
     get_all_users_as_one_string,
     get_all_tokens_as_one_string,
     remove_token,
+    get_variants_for_lab,
 )
 import json
 
@@ -37,6 +38,7 @@ class Gen(StatesGroup):
     token_remove_wait_token = State()
 
     # choose variant
+    variant_show_list = State()
     variant_wait_name = State()
 
 
@@ -136,10 +138,14 @@ async def cmd_remove_token(message: types.Message, state: FSMContext):
     await message.answer("Введите токен, который нужно удалить: <token>")
     await state.set_state(Gen.token_remove_wait_token)
 
+
 @dp.message(Command("show_vars"))
 async def cmd_show_vars(message: types.Message, state: FSMContext):
-    await message.answer("Введите название лабы, у которой нужно посмотреть варианты: <название>")
+    await message.answer(
+        "Введите название лабы, у которой нужно посмотреть варианты: <название>"
+    )
     await state.set_state(Gen.show_var_wait_lab_name)
+
 
 @dp.message(F.text, Gen.auth_wait_token)
 async def check_token(message: types.Message, state: FSMContext):
@@ -176,7 +182,7 @@ async def create_new_lab_get_description(message: types.Message, state: FSMConte
     user_data = await state.get_data()
     name = user_data["name"]
     if create_lab(name, description, message.from_user.id):
-        await message.answer(f"Лабораторная работа \"{name}\" была создана")
+        await message.answer(f'Лабораторная работа "{name}" была создана')
         await state.clear()
         return
     await message.answer("Произошла ошибка")
@@ -190,12 +196,13 @@ async def remove_token_from_table(message: types.Message):
         return
     token = message.text.strip()
     if remove_token(token):
-        await message.answer(f"Токен \"{token}\" был успешно удалён")
+        await message.answer(f'Токен "{token}" был успешно удалён')
         await state.clear()
         return
     await message.answer("Неверный токен")
 
-@dp.message(F.text, Gen.show_var_wait_lab_name)
+
+@dp.message(F.text, Gen.variant_show_list)
 async def show_variants(message: types.Message, state: FSMContext):
     variants = get_variants_for_lab(message.text)
     if len(variants) == 0:

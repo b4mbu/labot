@@ -22,4 +22,3 @@ class Variant(SqlAlchemyBase, SerializerMixin):
 
     def __str__(self):
         return f"name={self.name}, task={self.task}, left={self.count}"
-
